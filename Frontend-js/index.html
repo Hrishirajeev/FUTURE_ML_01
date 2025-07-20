@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Sales Forecasting Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>AI SALES FORECASTING DASHBOARD</h1>
+  <form class="dashboard-controls" id="forecast-form">
+    <label>Store: <input type="number" id="store" min="1" required></label>
+    <label>Department: <input type="number" id="department" min="1" required></label>
+    <label>Start Date: <input type="date" id="startDate" required></label>
+    <label>End Date: <input type="date" id="endDate" required></label>
+    <label>Model:
+      <select id="model">
+        <option value="ARIMA">ARIMA</option>
+        <option value="Prophet">Prophet</option>
+        <!-- Add more models if needed -->
+      </select>
+    </label>
+    <button type="submit" id="get-forecast-btn">Get Forecast</button>
+  </form>
+
+  <div class="dashboard-controls" style="margin-bottom: 0;">
+    <label>Upload your data (CSV):
+      <input type="file" id="csvFile" accept=".csv">
+    </label>
+    <button id="upload-btn" type="button">Upload & Forecast</button>
+    <span id="upload-message"></span>
+  </div>
+
+  <div id="error-message"></div>
+
+  <div class="section-buttons">
+    <button id="show-kpi-btn" type="button">Show KPIs</button>
+    <button id="show-chart-btn" type="button">Show Chart</button>
+    <button id="show-table-btn" type="button">Show Table</button>
+    <button id="show-error-btn" type="button">Show Error Metrics</button>
+  </div>
+
+  <div id="kpi-section" class="section"></div>
+
+  <div id="chart-section" class="section">
+    <canvas id="forecastChart" width="800" height="350"></canvas>
+  </div>
+
+  <div id="table-section" class="section">
+    <table id="forecast-table"></table>
+  </div>
+
+  <div id="error-section" class="section"></div>
+
+  <div id="anomaly-section" class="section"></div>
+
+  <script src="script.js"></script>
+  <script>
+    // Attach upload handler
+    document.getElementById('upload-btn').onclick = function() {
+      const fileInput = document.getElementById('csvFile');
+      const uploadMsg = document.getElementById('upload-message');
+      uploadMsg.textContent = '';
+      if (!fileInput.files.length) {
+        uploadMsg.textContent = "Please select a CSV file.";
+        return;
+      }
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        uploadMsg.textContent = "Upload successful! Forecast generated.";
+        // Optionally, trigger a forecast refresh here
+      })
+      .catch(err => {
+        uploadMsg.textContent = "Error: " + err;
+      });
+    };
+
+    // Attach forecast form handler
+    document.getElementById('forecast-form').onsubmit = getForecast;
+  </script>
+</body>
+</html>
